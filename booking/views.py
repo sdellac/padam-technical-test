@@ -1,9 +1,11 @@
+from django.utils.translation import ugettext as _
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
-
+from django.contrib import messages
+from django.views import View
 from .forms import BookingForm, JoinForm
 from .models import Booking
 from car.models import Car
@@ -15,20 +17,6 @@ from datetime import datetime, timedelta
 
 # Utils database functions
 
-def get_cars():
-	try:
-		return Car.objects.filter(disponibility=True)
-	except ObjectDoesNotExist:
-		return None
-
-def set_car_disponibility(id_car, state):
-	try:
-		car = Car.objects.get(id=id_car)
-		car.disponibility = state
-		car.save()
-	except ObjectDoesNotExist:
-		return None
-
 def get_booking(id_booking):
 	try:
 		return Booking.objects.get(id=id_booking)
@@ -38,14 +26,6 @@ def get_booking(id_booking):
 def get_bookings(user_request):
 	try:
 		return Booking.objects.filter(user=user_request)
-	except ObjectDoesNotExist:
-		return None
-
-def delete_booking(id_booking):
-	try:
-		inst = Booking.objects.get(id=id_booking)
-		set_car_disponibility(inst.car.id, True)
-		return inst.delete()
 	except ObjectDoesNotExist:
 		return None
 
@@ -81,26 +61,45 @@ def booking(request, bookingID):
 	else:
 		return HttpResponseForbidden()
 
-def new(request):
-	form = BookingForm(request.POST or None)
-	if form.is_valid():
-		booking = Booking()
-		booking.user = request.user
-		booking.reservation_date = datetime.now()
-		booking.start_address = form.cleaned_data['start_address']
-		booking.dest_address = form.cleaned_data['dest_address']
-		booking.duration = get_duration(booking.start_address, booking.dest_address)
-		booking.state = True
-		if get_cars():
-			booking.car = get_cars()[0]
-			set_car_disponibility(get_cars()[0].id, False)
-		booking.save()
-		return redirect('/bookings/' + str(booking))
+class NewBooking(View):
+	def get(self, request, *args, **kwargs):
+		if not Car.available.count():
+			messages.error(request, _("Error : no more car are available"))
+			return redirect('/bookings/home')
 
-	return render(request, 'booking/new.html', locals())
+		form = BookingForm()
+		return render(request, 'booking/new.html', {'form' : form})
+	def post(self, request, *args, **kwargs):
+		form = BookingForm(request.POST)
+		if form.is_valid():
+			if not Car.available.count():
+				messages.error(request, _("Error : no more car are available"))
+				return render(request, 'booking/new.html', {'form': form})
+
+			start_address = form.cleaned_data['start_address']
+			dest_address = form.cleaned_data['dest_address']
+			try:
+				duration = get_duration(start_address, dest_address)
+			except:
+				messages.error(request, _("Error : addresses could be wrong"))
+				return render(request, 'booking/new.html', {'form': form})
+
+			booking = Booking.objects.create(user=request.user,
+											 reservation_date=datetime.now(),
+											 start_address=start_address,
+											 dest_address=dest_address,
+											 duration=duration,
+											 state=True,
+											 car=Car.available.first())
+			return redirect('/bookings/' + str(booking))
+		return render(request, 'booking/new.html', {'form' : form})
 
 def delete(request, bookingID):
-	delete_booking(bookingID)
+	try:
+		inst = Booking.objects.get(id=bookingID)
+		inst.delete()
+	except ObjectDoesNotExist:
+		pass
 	data = get_bookings(request.user)
 
 	return render(request,'booking/home.html', dict([("bookings", data)]))

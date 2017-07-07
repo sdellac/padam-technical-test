@@ -3,6 +3,8 @@
 from django.db import models
 from car.models import Car
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -20,5 +22,12 @@ class Booking(models.Model):
 	def __str__(self):
 		return str(self.id)
 
+@receiver(post_save, sender=Booking)
+def remove_car_disponibility(sender, instance, **kwargs):
+	setattr(instance.car, 'disponibility', 0)
+	instance.car.save(update_fields=['disponibility'])
 
-
+@receiver(post_delete, sender=Booking)
+def add_car_disponibility(sender, instance, **kwargs):
+	setattr(instance.car, 'disponibility', 1)
+	instance.car.save(update_fields=['disponibility'])
