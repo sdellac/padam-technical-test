@@ -6,7 +6,7 @@ Ce n'est bien entendu pas suffisant, et la nuit même, vous cauchemardez qu'un b
 
 # Exercice :
 
-- Pour vous faire gagner du temps, et parce que vous n'arriverez pas sur un projet vierge, nous vous fournissons un système de réservation très simplifié permettant à un client de réserver une voiture pour effectuer un trajet.
+- Pour vous faire gagner du temps, et parce que vous n'arriverez pas sur un projet vierge, nous vous fournissons un système de réservation très simplifié permet95tant à un client de réserver une voiture pour effectuer un trajet.
 - Le code est de mauvaise qualité, et vous avez carte blanche pour l'améliorer et le rendre 'production ready'. Ce refactoring est le coeur de l'exercice.
 - Listez les présupposés dans le code qui rendent impossible de s'en servir réellement. Par exemple, il n'y a pas de système de paiement...
 - Bonus : corrigez ces simplifications ;-)
