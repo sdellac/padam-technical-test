@@ -22,6 +22,8 @@ car/models.py
 
 # Idées d'amélioration à fournir
 * Ajout d'une interface de login pour les *transporteurs*. Ceux ci auraient la possibilité d'accepter des réservations. Il faudrait donc ajouter une NullFK vers un transporteur_id sur Booking.
+* Sur la classe Car, ajout d'attributs supplémentaires (*nb_seats* pour le nombre de places, FK sur transporteur_id si on envisage qu'un transporteur peut détenir un parc de plusieurs voitures...).
+* Éventuellement, on pourrait avoir des sous classes de Car identifiant le type de navette (grande, petite, luxe, économique etc.)
 * Il faudrait ajouter des BooleanField (*active*, *canceled*, *ended*) sur Booking. 
   * Une instance de Booking pourrait se trouver dans ces 3 états.
   * Possibilité de consulter sa réservation en cours, ses réservations terminées (avec affichage du trajet), ses reservations en attente.
