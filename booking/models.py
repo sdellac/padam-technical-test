@@ -23,9 +23,10 @@ class Booking(models.Model):
 		return str(self.id)
 
 @receiver(post_save, sender=Booking)
-def remove_car_disponibility(sender, instance, **kwargs):
-	setattr(instance.car, 'disponibility', 0)
-	instance.car.save(update_fields=['disponibility'])
+def remove_car_disponibility(sender, instance, created, **kwargs):
+	if created:
+		setattr(instance.car, 'disponibility', 0)
+		instance.car.save(update_fields=['disponibility'])
 
 @receiver(post_delete, sender=Booking)
 def add_car_disponibility(sender, instance, **kwargs):

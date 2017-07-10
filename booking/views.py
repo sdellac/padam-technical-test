@@ -85,7 +85,7 @@ class NewBooking(View):
 				return render(request, 'booking/new.html', {'form': form})
 
 			booking = Booking.objects.create(user=request.user,
-											 reservation_date=datetime.now(),
+											 reservation_date=datetime.utcnow(),
 											 start_address=start_address,
 											 dest_address=dest_address,
 											 duration=duration,
